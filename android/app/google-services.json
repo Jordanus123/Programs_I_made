@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "709532701281",
+    "firebase_url": "https://amahelpdesk-65a6a.firebaseio.com",
+    "project_id": "amahelpdesk-65a6a",
+    "storage_bucket": "amahelpdesk-65a6a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709532701281:android:d3e0ae5d9f097576bdd020",
+        "android_client_info": {
+          "package_name": "com.example.helpdesk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "709532701281-i03n3l3n0bdnh3l9jusshoftgc4i4i5a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-ybPIIBRFoTIXAx0N7CS4j0KNeT1J70Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "709532701281-i03n3l3n0bdnh3l9jusshoftgc4i4i5a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
