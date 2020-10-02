@@ -15,10 +15,11 @@ class AdminForum extends StatefulWidget {
   final String uid;
   final String name;
   final String accountType;
-  AdminForum({this.uid,this.name,this.accountType});
+  AdminForum({this.uid, this.name, this.accountType});
 }
-class _AdminForumState extends State<AdminForum>{
-String _title="";
+
+class _AdminForumState extends State<AdminForum> {
+  String _title = "";
 
   @override
   void initState() {
@@ -38,47 +39,54 @@ String _title="";
             children: <Widget>[
               _streamAllUsers(),
               _labelContainer(),
-              widget.accountType=="admin" ? Container() : _addButton(),
+              widget.accountType == "admin" ? Container() : _addButton(),
             ],
           )),
     );
   }
 
-   Widget _addButton() => Container(
-                padding: EdgeInsets.only(bottom: 20,right: 20),
-                alignment: Alignment.bottomRight,
-                child: FloatingActionButton(
-                  elevation: 20,
-                  backgroundColor: Colors.white,
-                  onPressed: () {_addForum();},
-                  tooltip: 'Increment',
-                  child: Icon(Icons.add,color: Colors.blue,),
-                ),
-              );
+  Widget _addButton() => Container(
+        padding: EdgeInsets.only(bottom: 20, right: 20),
+        alignment: Alignment.bottomRight,
+        child: FloatingActionButton(
+          elevation: 20,
+          backgroundColor: Colors.white,
+          onPressed: () {
+            _addForum();
+          },
+          tooltip: 'Increment',
+          child: Icon(
+            Icons.add,
+            color: Colors.blue,
+          ),
+        ),
+      );
 
-
-  Widget _labelContainer()=>Container(
-                color: Colors.transparent,
-                height: 50,
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 80),
-                child: Container(
-                  height: 50,
-                  width: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.black26,
-                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(40),bottomRight: Radius.circular(40))
-                  ),
-                  child: Center(
-                    child: Text("FORUM",style: TextStyle(
-                      fontSize: 30,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 4
-                    ),),
-                  ),
-                ),
-              );
+  Widget _labelContainer() => Container(
+        color: Colors.transparent,
+        height: 50,
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 80),
+        child: Container(
+          height: 50,
+          width: 100,
+          decoration: BoxDecoration(
+              color: Colors.black26,
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40))),
+          child: Center(
+            child: Text(
+              "FORUM",
+              style: TextStyle(
+                  fontSize: 30,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4),
+            ),
+          ),
+        ),
+      );
 
   BoxDecoration _logInButtonDecoration() => BoxDecoration(
         borderRadius: BorderRadius.circular(30),
@@ -96,19 +104,22 @@ String _title="";
       );
 
   Widget _streamAllUsers() => StreamBuilder<QuerySnapshot>(
-    stream: Firestore.instance.collection("forum").snapshots(),
-    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-      
-      if(snapshot.connectionState == ConnectionState.waiting){
-        return Container(
-          width: 50.0,
-          height: 50.0,
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppThemeColors.primary),
-          ),
-        );
-      }
-          if (snapshot.data.documents.length<1) return Center(child: Text("No questions available at the moment"));
+        stream: FirebaseFirestore.instance.collection("forum").snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Container(
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height,
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppThemeColors.primary),
+                ),
+              ),
+            );
+          }
+          if (snapshot.data.docs.length < 1)
+            return Center(child: Text("No questions available at the moment"));
           if (snapshot.hasData) {
             return _scrollableContainer(snapshot);
           }
@@ -137,7 +148,8 @@ String _title="";
             children: <Widget>[_filteredUsersContainer(snapshot)],
           ));
 
-  Widget _filteredUsersContainer(snapshot) => Container(
+  Widget _filteredUsersContainer(AsyncSnapshot<QuerySnapshot> snapshot) =>
+      Container(
         padding: EdgeInsets.only(top: 0.0),
         height: Globals.tabBarWidgetsHeight(context) + 21.5,
         width: double.infinity,
@@ -146,12 +158,11 @@ String _title="";
             addAutomaticKeepAlives: true,
             addRepaintBoundaries: true,
             shrinkWrap: true,
-            itemCount: snapshot.data.documents.length + 1,
+            itemCount: snapshot.data.docs.length + 1,
             itemBuilder: (BuildContext context, int index) {
-              
-              return index == snapshot.data.documents.length
+              return index == snapshot.data.docs.length
                   ? Container(
-                    margin: EdgeInsets.only(top:50),
+                      margin: EdgeInsets.only(top: 50),
                       width: double.infinity,
                       height: 50.0,
                       alignment: Alignment.center,
@@ -169,25 +180,26 @@ String _title="";
     return GestureDetector(
       onTap: () {
         _expandUserDialog(
-          snapshot.data.documents[index],
+          snapshot.data.docs[index],
         );
       },
       child: Container(
-        margin: EdgeInsets.only(top:40),
-        child: _buttonWidgets(snapshot,index),
+        margin: EdgeInsets.only(top: 40),
+        child: _buttonWidgets(snapshot, index),
         padding: EdgeInsets.symmetric(horizontal: 20),
       ),
     );
   }
 
-  Widget _buttonWidgets(snapshot,index) => Stack(
+  Widget _buttonWidgets(AsyncSnapshot<QuerySnapshot> snapshot, index) => Stack(
         children: <Widget>[
-          _boardDesign(snapshot,index),
+          _boardDesign(snapshot, index),
           _logo(),
         ],
       );
 
-  Widget _boardDesign(snapshot,index) => Container(
+  Widget _boardDesign(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         width: double.infinity,
         margin: EdgeInsets.fromLTRB(
           50.0,
@@ -196,61 +208,65 @@ String _title="";
           20,
         ),
         decoration: _logInButtonDecoration(),
-        child: _stackedBoard(snapshot,index),
+        child: _stackedBoard(snapshot, index),
       );
 
-  Widget _stackedBoard(snapshot,index) => Stack(
+  Widget _stackedBoard(AsyncSnapshot<QuerySnapshot> snapshot, index) => Stack(
         children: <Widget>[
           _boardBackground(),
-          _boardText(snapshot,index),
+          _boardText(snapshot, index),
         ],
       );
 
-  Widget _boardText(snapshot,index) => Container(
+  Widget _boardText(AsyncSnapshot<QuerySnapshot> snapshot, index) => Container(
         child: InkWell(
           child: Column(
             children: <Widget>[
-              _titleContainer(snapshot,index),
-              _descContainer(snapshot,index),
+              _titleContainer(snapshot, index),
+              _descContainer(snapshot, index),
               _askedContainer(snapshot, index)
             ],
           ),
         ),
       );
 
-  Widget _askedContainer(snapshot,index) => Container(
+  Widget _askedContainer(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         width: double.infinity,
         height: 50.0,
         alignment: Alignment.topRight,
-        margin: EdgeInsets.only(left: 20.0, right: 15.0,),
-        child: 
-            Container(
-              alignment: Alignment.topRight,
-              height: 50,
-              width: double.infinity,
-              //color: Colors.white30,
-              child: Text(
-                // 'Sample Title',
-                ("Asked by: "+ snapshot.data.documents[index]['uid']),
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.0,
-                    ),
-                textAlign: TextAlign.left,
-              ),
+        margin: EdgeInsets.only(
+          left: 20.0,
+          right: 15.0,
         ),
-      );    
+        child: Container(
+          alignment: Alignment.topRight,
+          height: 50,
+          width: double.infinity,
+          //color: Colors.white30,
+          child: Text(
+            // 'Sample Title',
+            ("Asked by: " + snapshot.data.docs[index].data()['uid']),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20.0,
+            ),
+            textAlign: TextAlign.left,
+          ),
+        ),
+      );
 
-  Widget _descContainer(snapshot,index) => Container(
+  Widget _descContainer(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         width: 300,
         height: 70.0,
         //color: Colors.white30,
         alignment: Alignment.topLeft,
         margin: EdgeInsets.only(left: 60.0, right: 15.0, bottom: 0),
-        padding: EdgeInsets.only(top:5),
+        padding: EdgeInsets.only(top: 5),
         child: Text(
           // 'sample text lang to na para ma test yung app na to',
-          (snapshot.data.documents[index]['desc']),
+          (snapshot.data.docs[index].data()['desc']),
           style: TextStyle(
             color: Colors.white,
             fontSize: 17.0,
@@ -259,7 +275,8 @@ String _title="";
         ),
       );
 
-  Widget _titleContainer(snapshot,index) => Container(
+  Widget _titleContainer(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         decoration: BoxDecoration(
             border: BorderDirectional(
                 bottom: BorderSide(color: Colors.white, width: 1))),
@@ -275,7 +292,7 @@ String _title="";
               //color: Colors.white30,
               child: Text(
                 // 'Sample Title',
-                (snapshot.data.documents[index]['title']),
+                (snapshot.data.docs[index].data()['title']),
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 25.0,
@@ -317,41 +334,29 @@ String _title="";
         margin: EdgeInsets.only(top: 100, bottom: 50, left: 0),
       );
 
-    void _expandUserDialog(snapshot) {
-      var title=snapshot['title'];
-      var indexNumber=snapshot['indexNumber'];
-    Navigator.push(
-      context,
-      HeroDialogRoute(
-        builder: (BuildContext context) {
-            return AdminForum1(
-              indexNumber: indexNumber,
-              accountType: widget.accountType,
-              title: title,
-              snapshot: snapshot,
-            );
-          }
-        )
+  void _expandUserDialog(QueryDocumentSnapshot snapshot) {
+    var title = snapshot.data()['title'];
+    var indexNumber = snapshot.data()['indexNumber'];
+    Navigator.push(context, HeroDialogRoute(builder: (BuildContext context) {
+      return AdminForum1(
+        indexNumber: indexNumber,
+        accountType: widget.accountType,
+        title: title,
+        snapshot: snapshot,
       );
-    }
+    }));
+  }
 
-    void _addForum() {
-    Navigator.push(
-      context,
-      HeroDialogRoute(
-        builder: (BuildContext context) {
-            return AddForum(
-              uid: widget.uid,
-              name: widget.name,
-
-              
-            );
-          }
-        )
+  void _addForum() {
+    Navigator.push(context, HeroDialogRoute(builder: (BuildContext context) {
+      return AddForum(
+        uid: widget.uid,
+        name: widget.name,
       );
-    }
-    //pushh(context, Faq1(context: context, snapshot: snapshot,tab:widget.tab));
-  
+    }));
+  }
+  //pushh(context, Faq1(context: context, snapshot: snapshot,tab:widget.tab));
+
 }
 
 //   void _expandUserDialog(snapshot,index) {

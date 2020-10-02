@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:helpdesk/provider/auth_provider.dart';
+import 'package:helpdesk/screens/REGISTRATION/sign_scaffold.dart';
 import 'package:helpdesk/screens/welcome4.dart';
+import 'package:helpdesk/services/auth_screen.dart';
 import 'package:helpdesk/utils/colors.dart';
 import 'package:flutter/services.dart';
+import 'package:helpdesk/utils/route_animation.dart';
 import 'package:helpdesk/utils/shared_components.dart';
 import 'package:helpdesk/services/auth.dart';
+import 'package:provider/provider.dart';
 
 import 'sign.dart';
 
@@ -15,40 +20,43 @@ class Loginscreen extends StatefulWidget {
 class _LoginscreenState extends State<Loginscreen> {
   TextEditingController _passwordController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
-  final AuthService _auth = AuthService();
+  //final AuthService _auth = AuthService();
   bool _isLoggingIn = false;
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        extendBody: true,
-        body: _main(),
-      ),
+    final auth = Provider.of<AuthProvider>(context);
+    return Container(
+      child: _main(auth),
     );
   }
 
-  Widget _main() => SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height+75,
-          width: double.infinity,
-          decoration: _maindeco(),
-          child: Stack(
-            children: <Widget>[
-              Opacity(
+  Widget _main(AuthProvider auth) => Container(
+        height: MediaQuery.of(context).size.height,
+        width: double.infinity,
+        decoration: _maindeco(),
+        child: Stack(
+          children: <Widget>[
+            Container(
+              height: MediaQuery.of(context).size.height,
+              width: double.infinity,
+              child: Opacity(
                   opacity: .05,
                   child: Image(
+                    fit: BoxFit.cover,
                     image: AssetImage('assets/skin3.jpg'),
-                    height: MediaQuery.of(context).size.height+75,
-          width: double.infinity,
+                    height: MediaQuery.of(context).size.height + 75,
+                    width: double.infinity,
                   )),
-              Column(
+            ),
+            SingleChildScrollView(
+              child: Column(
                 children: <Widget>[
                   _icon(),
-                  _form(),
+                  _form(auth),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
 
@@ -79,14 +87,14 @@ class _LoginscreenState extends State<Loginscreen> {
         ),
       );
 
-  Widget _form() => Container(
+  Widget _form(AuthProvider auth) => Container(
         child: Column(
           children: <Widget>[
             _loginTitle(),
             _emailTextField(),
             _passwordTextField(),
             SizedBox(height: 20.0),
-            _loginButton(),
+            _loginButton(auth),
             SizedBox(height: 40.0),
             _signUpTitle(),
             _signUpLabel()
@@ -173,33 +181,39 @@ class _LoginscreenState extends State<Loginscreen> {
             borderSide: BorderSide(width: 2.0, color: Colors.grey)),
       );
 
-  Widget _loginButton() => Container(
+  Widget _loginButton(AuthProvider auth) => Container(
       decoration: _logInButtonDecoration(),
       child: InkWell(
           borderRadius: BorderRadius.all(Radius.circular(40.0)),
-          onTap: () async {
-            setState(() {
-              _isLoggingIn = true;
+          onTap: () {
+            var result = auth
+                .logIn(_emailController.text, _passwordController.text)
+                .then((value) {
+              Scaffold.of(context).showSnackBar(SnackBar(content: Text(value)));
+              if (value == "Logged In") {
+                Navigator.of(context)
+                    .pushReplacement(Routes.createRoute(AuthScreen()));
+              }
             });
-            await _auth
-                .signInUser(
-                    _emailController.text, _passwordController.text, context)
-                .then((user) {
-              print(user.uid);
-              pushReplace(context, WelcomeScreen4(userid: user.uid));
-            }).catchError((e) {
-              setState(() {
-                _isLoggingIn = false;
-              });
-            });
-            FocusScope.of(context).requestFocus(new FocusNode());
+            // await _auth
+            //     .signInUser(
+            //         _emailController.text, _passwordController.text, context)
+            //     .then((user) {
+            //   print(user.uid);
+            //   pushReplace(context, WelcomeScreen4(userid: user.uid));
+            // }).catchError((e) {
+            //   setState(() {
+            //     _isLoggingIn = false;
+            //   });
+            // });
+            // FocusScope.of(context).requestFocus(new FocusNode());
           },
           child: Container(
               width: 250.0,
               height: 45.0,
               alignment: Alignment.center,
               margin: EdgeInsets.only(left: 10.0, right: 10.0),
-              child: _isLoggingIn
+              child: auth.logging
                   ? Container(
                       width: 20.0,
                       height: 20.0,
@@ -246,16 +260,14 @@ class _LoginscreenState extends State<Loginscreen> {
         margin: EdgeInsets.only(top: 30.0),
         child: Text(
           "Don't have an account?",
-          style: TextStyle(fontSize: 14.0,color: Colors.grey[400]),
+          style: TextStyle(fontSize: 14.0, color: Colors.grey[400]),
         ),
       );
 
   Widget _signUpLabel() => GestureDetector(
-        onTap: (){
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => SignIn()),
-          );
+        onTap: () {
+          Navigator.of(context)
+              .pushReplacement(Routes.createSlideRoute(SignScaffold()));
         },
         child: Container(
           margin: EdgeInsets.only(bottom: 20.0),
@@ -265,17 +277,13 @@ class _LoginscreenState extends State<Loginscreen> {
             children: <Widget>[
               Text(
                 "Click here to ",
-                style: TextStyle(
-                  fontSize: 15.0,
-                  color: Colors.grey[400]
-                ),
+                style: TextStyle(fontSize: 15.0, color: Colors.grey[400]),
               ),
               Text(
                 "Sign Up",
                 style: TextStyle(
                     fontSize: 16.0,
                     color: Colors.white,
-                    
                     fontWeight: FontWeight.bold),
               ),
             ],

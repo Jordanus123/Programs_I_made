@@ -14,9 +14,10 @@ class AdminTrivia extends StatefulWidget {
   final String uid;
   final String name;
   final String accountType;
-  AdminTrivia({this.uid,this.name,this.accountType});
+  AdminTrivia({this.uid, this.name, this.accountType});
 }
-class _AdminTriviaState extends State<AdminTrivia>{
+
+class _AdminTriviaState extends State<AdminTrivia> {
   @override
   void initState() {
     super.initState();
@@ -35,46 +36,54 @@ class _AdminTriviaState extends State<AdminTrivia>{
             children: <Widget>[
               _streamAllUsers(),
               _labelContainer(),
-              widget.accountType=='admin' ? _addButton() : Container(),
+              widget.accountType == 'admin' ? _addButton() : Container(),
             ],
           )),
     );
   }
 
   Widget _addButton() => Container(
-                padding: EdgeInsets.only(bottom: 20,right: 20),
-                alignment: Alignment.bottomRight,
-                child: FloatingActionButton(
-                  elevation: 20,
-                  backgroundColor: Colors.white,
-                  onPressed: () {_addTrivia();},
-                  tooltip: 'Increment',
-                  child: Icon(Icons.add,color: Colors.blue,),
-                ),
-              );
+        padding: EdgeInsets.only(bottom: 20, right: 20),
+        alignment: Alignment.bottomRight,
+        child: FloatingActionButton(
+          elevation: 20,
+          backgroundColor: Colors.white,
+          onPressed: () {
+            _addTrivia();
+          },
+          tooltip: 'Increment',
+          child: Icon(
+            Icons.add,
+            color: Colors.blue,
+          ),
+        ),
+      );
 
-  Widget _labelContainer()=>Container(
-                color: Colors.transparent,
-                height: 50,
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 80),
-                child: Container(
-                  height: 50,
-                  width: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.black26,
-                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(40),bottomRight: Radius.circular(40))
-                  ),
-                  child: Center(
-                    child: Text("TRIVIA",style: TextStyle(
-                      fontSize: 30,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 4
-                    ),),
-                  ),
-                ),
-              );
+  Widget _labelContainer() => Container(
+        color: Colors.transparent,
+        height: 50,
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 80),
+        child: Container(
+          height: 50,
+          width: 100,
+          decoration: BoxDecoration(
+              color: Colors.black26,
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40))),
+          child: Center(
+            child: Text(
+              "TRIVIA",
+              style: TextStyle(
+                  fontSize: 30,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4),
+            ),
+          ),
+        ),
+      );
 
   BoxDecoration _logInButtonDecoration() => BoxDecoration(
         borderRadius: BorderRadius.circular(30),
@@ -107,19 +116,22 @@ class _AdminTriviaState extends State<AdminTrivia>{
       );
 
   Widget _streamAllUsers() => StreamBuilder<QuerySnapshot>(
-        stream: Firestore.instance.collection("trivia").snapshots(),
+        stream: FirebaseFirestore.instance.collection("trivia").snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Container(
               width: double.infinity,
-              height: 50.0,
-              child: CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(AppThemeColors.primary),
+              height: MediaQuery.of(context).size.height,
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppThemeColors.primary),
+                ),
               ),
             );
           }
-          if (!snapshot.hasData) return Center(child: Text("No Trivias available at the moment"));
+          if (!snapshot.hasData)
+            return Center(child: Text("No Trivias available at the moment"));
           if (snapshot.hasData) {
             return _scrollableContainer(snapshot);
           }
@@ -148,7 +160,8 @@ class _AdminTriviaState extends State<AdminTrivia>{
             children: <Widget>[_filteredUsersContainer(snapshot)],
           ));
 
-  Widget _filteredUsersContainer(snapshot) => Container(
+  Widget _filteredUsersContainer(AsyncSnapshot<QuerySnapshot> snapshot) =>
+      Container(
         padding: EdgeInsets.only(top: 0.0),
         height: Globals.tabBarWidgetsHeight(context) + 21.5,
         width: double.infinity,
@@ -157,11 +170,11 @@ class _AdminTriviaState extends State<AdminTrivia>{
             addAutomaticKeepAlives: true,
             addRepaintBoundaries: true,
             shrinkWrap: true,
-            itemCount: snapshot.data.documents.length + 1,
+            itemCount: snapshot.data.docs.length + 1,
             itemBuilder: (BuildContext context, int index) {
-              return index == snapshot.data.documents.length
+              return index == snapshot.data.docs.length
                   ? Container(
-                    margin: EdgeInsets.only(top:50),
+                      margin: EdgeInsets.only(top: 50),
                       width: double.infinity,
                       height: 50.0,
                       alignment: Alignment.center,
@@ -179,25 +192,26 @@ class _AdminTriviaState extends State<AdminTrivia>{
     return GestureDetector(
       onTap: () {
         _expandUserDialog(
-          snapshot.data.documents[index],
+          snapshot.data.docs[index],
         );
       },
       child: Container(
-        margin: EdgeInsets.only(top:40),
-        child: _buttonWidgets(snapshot,index),
+        margin: EdgeInsets.only(top: 40),
+        child: _buttonWidgets(snapshot, index),
         padding: EdgeInsets.symmetric(horizontal: 20),
       ),
     );
   }
 
-  Widget _buttonWidgets(snapshot,index) => Stack(
+  Widget _buttonWidgets(AsyncSnapshot<QuerySnapshot> snapshot, index) => Stack(
         children: <Widget>[
-          _boardDesign(snapshot,index),
+          _boardDesign(snapshot, index),
           //_logo(),
         ],
       );
 
-  Widget _boardDesign(snapshot,index) => Container(
+  Widget _boardDesign(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         width: double.infinity,
         margin: EdgeInsets.fromLTRB(
           50.0,
@@ -206,51 +220,53 @@ class _AdminTriviaState extends State<AdminTrivia>{
           20,
         ),
         decoration: _logInButtonDecoration(),
-        child: _stackedBoard(snapshot,index),
+        child: _stackedBoard(snapshot, index),
       );
 
-  Widget _stackedBoard(snapshot,index) => Stack(
+  Widget _stackedBoard(AsyncSnapshot<QuerySnapshot> snapshot, index) => Stack(
         children: <Widget>[
           _boardBackground(),
-          _boardText(snapshot,index),
+          _boardText(snapshot, index),
         ],
       );
 
-  Widget _boardText(snapshot,index) => Container(
+  Widget _boardText(AsyncSnapshot<QuerySnapshot> snapshot, index) => Container(
         child: InkWell(
           child: Column(
             children: <Widget>[
-              _titleContainer(snapshot,index),
-              _descContainer(snapshot,index),
+              _titleContainer(snapshot, index),
+              _descContainer(snapshot, index),
             ],
           ),
         ),
       );
 
-  Widget _descContainer(snapshot,index) => Container(
+  Widget _descContainer(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         width: 300,
         height: 120.0,
         //color: Colors.white30,
         alignment: Alignment.topLeft,
         margin: EdgeInsets.only(left: 60.0, right: 50.0, bottom: 0),
-        padding: EdgeInsets.only(top:5),
+        padding: EdgeInsets.only(top: 5),
         child: Text(
           //'sample text lang to na para ma test yung app na to',
-          (snapshot.data.documents[index]['desc']),
+          (snapshot.data.docs[index].data()['desc']),
           style: TextStyle(
-                    color: Colors.lightGreenAccent[400],
-                    fontSize: 15.0,
-                    fontFamily: 'fallout2',
-                    
-                    fontWeight: FontWeight.bold),
+              color: Colors.lightGreenAccent[400],
+              fontSize: 15.0,
+              fontFamily: 'fallout2',
+              fontWeight: FontWeight.bold),
           textAlign: TextAlign.left,
         ),
       );
 
-  Widget _titleContainer(snapshot,index) => Container(
+  Widget _titleContainer(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         decoration: BoxDecoration(
             border: BorderDirectional(
-                bottom: BorderSide(color: Colors.lightGreenAccent[400], width: 4))),
+                bottom:
+                    BorderSide(color: Colors.lightGreenAccent[400], width: 4))),
         width: double.infinity,
         height: 45.0,
         alignment: Alignment.topLeft,
@@ -258,7 +274,7 @@ class _AdminTriviaState extends State<AdminTrivia>{
         child: Column(
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(bottom:0,left: 20),
+              margin: EdgeInsets.only(bottom: 0, left: 20),
               height: 30,
               width: double.infinity,
               //color: Colors.white30,
@@ -279,7 +295,6 @@ class _AdminTriviaState extends State<AdminTrivia>{
       );
 
   Widget _boardBackground() => ClipRRect(
-        
         child: Stack(
           children: <Widget>[
             Image(
@@ -308,34 +323,23 @@ class _AdminTriviaState extends State<AdminTrivia>{
         margin: EdgeInsets.only(top: 100, bottom: 50, left: 0),
       );
 
-    void _expandUserDialog(snapshot) {
-    Navigator.push(
-      context,
-      HeroDialogRoute(
-        builder: (BuildContext context) {
-            return Faq1(
-              context: context,
-              snapshot: snapshot,
-            );
-          }
-        )
+  void _expandUserDialog(snapshot) {
+    Navigator.push(context, HeroDialogRoute(builder: (BuildContext context) {
+      return Faq1(
+        context: context,
+        snapshot: snapshot,
       );
-    }
+    }));
+  }
 
-    void _addTrivia() {
-      
-    Navigator.push(
-      context,
-      HeroDialogRoute(
-        builder: (BuildContext context) {
-            return AddTrivia(
-              uid: widget.uid,
-              name: widget.name,
-            );
-          }
-        )
+  void _addTrivia() {
+    Navigator.push(context, HeroDialogRoute(builder: (BuildContext context) {
+      return AddTrivia(
+        uid: widget.uid,
+        name: widget.name,
       );
-    }
-    //pushh(context, Faq1(context: context, snapshot: snapshot,tab:widget.tab));
-  
+    }));
+  }
+  //pushh(context, Faq1(context: context, snapshot: snapshot,tab:widget.tab));
+
 }

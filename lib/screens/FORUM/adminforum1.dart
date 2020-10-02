@@ -23,7 +23,7 @@
 //     this.indexNumber,
 //     this.accountType
 //   });
-  
+
 // }
 
 // class _AdminForum1State extends State<AdminForum1> {
@@ -32,9 +32,9 @@
 //       appBar: AppBar(),
 //       body: Stack(
 //         children: <Widget>[
-//           Column( 
+//           Column(
 //             children: <Widget>[
-//               _streamAllUsers() 
+//               _streamAllUsers()
 //             ],
 //           ),
 //           widget.accountType=='admin' ? addButton() : Container(),
@@ -98,7 +98,7 @@
 //   Widget _scrollableContainer(
 //     AsyncSnapshot<QuerySnapshot> snapshot
 //   ) => Container(
-    
+
 //       child: Column(
 //         crossAxisAlignment: CrossAxisAlignment.start,
 //         mainAxisAlignment: MainAxisAlignment.center,
@@ -107,7 +107,6 @@
 //         ],
 //       )
 //   );
-
 
 //  Widget _filteredUsersContainer(snapshot) => Container(
 //     padding: EdgeInsets.only(top: 5.0),
@@ -144,7 +143,7 @@
 //           child: Stack(
 //             children: <Widget>[
 //               Container(
-//     child: InkWell(      
+//     child: InkWell(
 //       borderRadius: BorderRadius.all(Radius.circular(40.0)),
 //       child: Column(
 //         children: <Widget>[
@@ -186,7 +185,7 @@
 //     );
 //   }
 // void _addForumAnswer() {
-      
+
 //     Navigator.push(
 //       context,
 //       HeroDialogRoute(
@@ -199,7 +198,6 @@
 //         )
 //       );
 //     }
-
 
 // }
 
@@ -215,19 +213,14 @@ import 'addforumanswer.dart';
 class AdminForum1 extends StatefulWidget {
   @override
   _AdminForum1State createState() => _AdminForum1State();
-  final CollectionReference userCollection = Firestore.instance.collection('faq');
+  final CollectionReference userCollection =
+      FirebaseFirestore.instance.collection('faq');
   final String indexNumber;
   final String accountType;
   final String title;
-  final DocumentSnapshot snapshot;
+  final QueryDocumentSnapshot snapshot;
 
-  AdminForum1({
-    this.indexNumber,
-    this.accountType,
-    this.title,
-    this.snapshot
-  });
-  
+  AdminForum1({this.indexNumber, this.accountType, this.title, this.snapshot});
 }
 
 class _AdminForum1State extends State<AdminForum1> {
@@ -261,21 +254,21 @@ class _AdminForum1State extends State<AdminForum1> {
             body: Stack(
               children: <Widget>[
                 Container(
-                height: MediaQuery.of(context).size.height,
-                decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  stops: [0.1, 0.2, 0.4, 0.4],
-                  colors: [
-                    Colors.blue[600],
-                    Colors.blue[800],
-                    Colors.blue[800],
-                    Colors.white,
-                  ],
+                  height: MediaQuery.of(context).size.height,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      stops: [0.1, 0.2, 0.4, 0.4],
+                      colors: [
+                        Colors.blue[600],
+                        Colors.blue[800],
+                        Colors.blue[800],
+                        Colors.white,
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              ),
                 SingleChildScrollView(
                   child: Column(
                     children: <Widget>[
@@ -296,241 +289,224 @@ class _AdminForum1State extends State<AdminForum1> {
               ],
             ),
           ),
-          widget.accountType=='admin' ? addButton() : Container(),
+          widget.accountType == 'admin' ? addButton() : Container(),
         ],
       ),
     );
   }
 
-
-    Widget addButton() => Container(
-                padding: EdgeInsets.only(bottom: 20,right: 20),
-                alignment: Alignment.bottomRight,
-                child: FloatingActionButton(
-                  elevation: 20,
-                  backgroundColor: Colors.white,
-                  onPressed: () {_addForumAnswer();},
-                  tooltip: 'Increment',
-                  child: Icon(Icons.add,color: Colors.blue,),
-                ),
-              );
+  Widget addButton() => Container(
+        padding: EdgeInsets.only(bottom: 20, right: 20),
+        alignment: Alignment.bottomRight,
+        child: FloatingActionButton(
+          elevation: 20,
+          backgroundColor: Colors.white,
+          onPressed: () {
+            _addForumAnswer();
+          },
+          tooltip: 'Increment',
+          child: Icon(
+            Icons.add,
+            color: Colors.blue,
+          ),
+        ),
+      );
 
   void _addForumAnswer() {
-      
-    Navigator.push(
-      context,
-      HeroDialogRoute(
-        builder: (BuildContext context) {
-            return AddForumAnswer(
-              title: widget.title,
-              indexNumber: widget.indexNumber
-            );
-          }
-        )
-      );
-    }
-
+    Navigator.push(context, HeroDialogRoute(builder: (BuildContext context) {
+      return AddForumAnswer(
+          title: widget.title, indexNumber: widget.indexNumber);
+    }));
+  }
 
   Widget _questionContainer() => Container(
-                //padding: EdgeInsets.only(right: 20, left: 60),
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                margin: EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    width: 8,
-                    color: Colors.white
-                    ),
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(20)
-                ),
-                alignment: Alignment.center,
-                child: Column(
-                  children: <Widget>[
-                    SizedBox(height:20),
-                    Container(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        "${widget.snapshot.data['title']}",
-                        //"widget.userCollection.document(widget.indexNumber)[asd],",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left:10),
-                      alignment: Alignment.bottomLeft,
-                      child: Text(
-                        "${widget.snapshot.data['desc']}",
-                        //"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaakoy napapaisip lang",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(height:20),
-                  ],
-                ),
-              );
-  
+        //padding: EdgeInsets.only(right: 20, left: 60),
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        margin: EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+            border: Border.all(width: 8, color: Colors.white),
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(20)),
+        alignment: Alignment.center,
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 20),
+            Container(
+              alignment: Alignment.topLeft,
+              child: Text(
+                "${widget.snapshot.data()['title']}",
+                //"widget.userCollection.document(widget.indexNumber)[asd],",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(left: 10),
+              alignment: Alignment.bottomLeft,
+              child: Text(
+                "${widget.snapshot.data()['desc']}",
+                //"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaakoy napapaisip lang",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(height: 20),
+          ],
+        ),
+      );
+
   Widget _answerContainer() => Container(
-                margin: EdgeInsets.only(right:20),
-                alignment: Alignment.centerRight,
-                child: Column(
-                  children: <Widget>[
-                    Text(
-                      //"${widget.snapshot.data['desc']}",
-                      "Answers",
-                      style: TextStyle(
-                          color: Colors.blue[400],
-                          fontSize: 40,
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                  ],
-                ),
-              );
+        margin: EdgeInsets.only(right: 20),
+        alignment: Alignment.centerRight,
+        child: Column(
+          children: <Widget>[
+            Text(
+              //"${widget.snapshot.data['desc']}",
+              "Answers",
+              style: TextStyle(
+                color: Colors.blue[400],
+                fontSize: 40,
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
 
   Widget _border(color) => Container(
-                margin: EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  border: BorderDirectional(
-                    bottom: BorderSide(
-                      color: color,
-                      width: 5,
-                    ),
-                  ),
-                ),
-              );
+        margin: EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          border: BorderDirectional(
+            bottom: BorderSide(
+              color: color,
+              width: 5,
+            ),
+          ),
+        ),
+      );
 
   Widget _icon() => Container(
         padding: EdgeInsets.symmetric(vertical: 20),
         width: 250.0,
         height: 350.0,
-        child:
-            Image(
+        child: Image(
           image: AssetImage('assets/LOGO3.png'),
           height: 150,
           width: 150,
         ),
       );
 
-   Widget _adminContainer() => Container(
-                //padding: EdgeInsets.only(right: 20, left: 60),
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                margin: EdgeInsets.symmetric(horizontal: 30),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    width: 8,
-                    color: Colors.blue
-                    ),
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(20)
-                ),
-                alignment: Alignment.center,
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      child: _streamAllUsers(),),
-                    SizedBox(height:20),
-                  ],
-                ),
-              );   
+  Widget _adminContainer() => Container(
+        //padding: EdgeInsets.only(right: 20, left: 60),
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        margin: EdgeInsets.symmetric(horizontal: 30),
+        decoration: BoxDecoration(
+            border: Border.all(width: 8, color: Colors.blue),
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(20)),
+        alignment: Alignment.center,
+        child: Column(
+          children: <Widget>[
+            Container(
+              child: _streamAllUsers(),
+            ),
+            SizedBox(height: 20),
+          ],
+        ),
+      );
 
-    Widget _streamAllUsers() => StreamBuilder<QuerySnapshot>(
-    stream: Firestore.instance.collection('forum').document(widget.indexNumber).collection('comments').snapshots(),
-    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-      if(snapshot.connectionState == ConnectionState.waiting){
-        return Container(
-          width: 50.0,
-          height: 50.0,
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppThemeColors.primary),
-          ),
-        );
-      }
-      if(snapshot.data.documents.length<1) return Center(child: Text("Answers for this question not yet available"));
-      if(snapshot.hasData) {
-        return _scrollableContainer(snapshot);
-      }
-      return Container();
-    },
-  );    
+  Widget _streamAllUsers() => StreamBuilder<QuerySnapshot>(
+        stream: Firestore.instance
+            .collection('forum')
+            .document(widget.indexNumber)
+            .collection('comments')
+            .snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Container(
+              width: 50.0,
+              height: 50.0,
+              child: CircularProgressIndicator(
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppThemeColors.primary),
+              ),
+            );
+          }
+          if (snapshot.data.documents.length < 1)
+            return Center(
+                child: Text("Answers for this question not yet available"));
+          if (snapshot.hasData) {
+            return _scrollableContainer(snapshot);
+          }
+          return Container();
+        },
+      );
 
-  Widget _scrollableContainer(
-    AsyncSnapshot<QuerySnapshot> snapshot
-  ) => Container(
+  Widget _scrollableContainer(AsyncSnapshot<QuerySnapshot> snapshot) =>
+      Container(
+          child: Column(
+        children: <Widget>[_filteredUsersContainer(snapshot)],
+      ));
+
+  Widget _filteredUsersContainer(snapshot) => Container(
+        //padding: EdgeInsets.only(top: 5.0),
+        height: 300,
+        child: ListView.builder(
+            physics: AlwaysScrollableScrollPhysics(),
+            addAutomaticKeepAlives: true,
+            addRepaintBoundaries: true,
+            shrinkWrap: true,
+            itemCount: snapshot.data.documents.length + 1,
+            itemBuilder: (BuildContext context, int index) {
+              return index == snapshot.data.documents.length
+                  ? Container(
+                      width: Globals.screenWidth(context),
+                      height: 50.0,
+                      alignment: Alignment.center,
+                      child: Text(
+                        "No more answers",
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                    )
+                  : _faqbutton2(context, index, snapshot);
+            }),
+      );
+
+  Widget _faqbutton2(
+      context, int index, AsyncSnapshot<QuerySnapshot> snapshot) {
+    return Container(
+      //padding: EdgeInsets.only(right: 20, left: 60),
+      padding: EdgeInsets.symmetric(
+        horizontal: 10,
+      ),
+      margin: EdgeInsets.only(bottom: 10, left: 20, right: 20),
+      decoration: BoxDecoration(
+          border: Border.all(width: 8, color: Colors.white),
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(20)),
+      alignment: Alignment.center,
       child: Column(
         children: <Widget>[
-          _filteredUsersContainer(snapshot)
+          SizedBox(height: 10),
+          Container(
+            alignment: Alignment.topLeft,
+            child: Text(
+              (snapshot.data.docs[index].data()['text']),
+              //"widget.userCollection.document(widget.indexNumber)[asd],",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(height: 10),
         ],
-      )
-  );
-
-
- Widget _filteredUsersContainer(snapshot) => Container(
-    //padding: EdgeInsets.only(top: 5.0),
-    height: 300,
-      child: ListView.builder(
-      physics: AlwaysScrollableScrollPhysics(),
-      addAutomaticKeepAlives: true,
-      addRepaintBoundaries: true,
-      shrinkWrap: true,
-      itemCount: snapshot.data.documents.length + 1,
-      itemBuilder: (BuildContext context, int index){
-        return index == snapshot.data.documents.length
-          ? Container(
-              width: Globals.screenWidth(context),
-              height: 50.0,
-              alignment: Alignment.center,
-              child: Text(
-                "No more answers",
-                style: TextStyle(
-                  color: Colors.blue
-                ),
-              ),
-            )
-            : _faqbutton2(context,index, snapshot);
-      }
-    ),
-  );
-
-  Widget _faqbutton2(context, int index, AsyncSnapshot<QuerySnapshot> snapshot){
-    return Container(
-                //padding: EdgeInsets.only(right: 20, left: 60),
-                padding: EdgeInsets.symmetric(horizontal: 10,),
-                margin: EdgeInsets.only(bottom: 10,left: 20,right: 20),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    width: 8,
-                    color: Colors.white
-                    ),
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(20)
-                ),
-                alignment: Alignment.center,
-                child: Column(
-                  children: <Widget>[
-                    SizedBox(height:10),
-                    Container(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        (snapshot.data.documents[index]['text']),
-                        //"widget.userCollection.document(widget.indexNumber)[asd],",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(height:10),
-                  ],
-                ),
-              );
+      ),
+    );
   }
-
-
 }

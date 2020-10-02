@@ -12,9 +12,18 @@ class _InactiveState extends State<Inactive> {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-      body: Center
-      (child: FlatButton(onPressed: ()async{signOut(); Navigator.push(context, MaterialPageRoute( builder: (BuildContext context) => Loginscreen()));;}, child: Text("ACCOUNT DEACTIVATED. PRESS TO LOGOUT"))),
+    return Scaffold(
+      body: Center(
+          child: FlatButton(
+              onPressed: () async {
+                signOut();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => Loginscreen()));
+                ;
+              },
+              child: Text("ACCOUNT DEACTIVATED. PRESS TO LOGOUT"))),
     );
   }
 
@@ -24,7 +33,6 @@ class _InactiveState extends State<Inactive> {
         .then((_) => print("sign out auth performed"))
         .catchError((err) => print("sign out auth error $err"));
   }
-
 
 // Scaffold(
 //           body:Container(
@@ -38,8 +46,8 @@ class _InactiveState extends State<Inactive> {
 //                 ],
 //               ),
 //             ),
-          
+
 //         ),
-      
+
 //     );
 }

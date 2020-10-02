@@ -10,16 +10,15 @@ import 'faq1.dart';
 typedef OnClickExplore(int tabBarControllerIndex);
 
 class AdminFaq extends StatefulWidget {
-
   @override
   _AdminFaqState createState() => _AdminFaqState();
   final String uid;
   final String name;
   final String accountType;
-  AdminFaq({this.uid,this.name,this.accountType});
+  AdminFaq({this.uid, this.name, this.accountType});
 }
 
-class _AdminFaqState extends State<AdminFaq>{
+class _AdminFaqState extends State<AdminFaq> {
   @override
   void initState() {
     super.initState();
@@ -27,7 +26,6 @@ class _AdminFaqState extends State<AdminFaq>{
 
   @override
   Widget build(BuildContext context) {
-    
     return Container(
       height: MediaQuery.of(context).size.height,
       width: double.infinity,
@@ -39,46 +37,54 @@ class _AdminFaqState extends State<AdminFaq>{
             children: <Widget>[
               _streamAllUsers(),
               _labelContainer(),
-              widget.accountType=='admin' ? _addButton() :  Container(),
+              widget.accountType == 'admin' ? _addButton() : Container(),
             ],
           )),
     );
   }
 
   Widget _addButton() => Container(
-                padding: EdgeInsets.only(bottom: 20,right: 20),
-                alignment: Alignment.bottomRight,
-                child: FloatingActionButton(
-                  elevation: 20,
-                  backgroundColor: Colors.white,
-                  onPressed: () {_addFaq();},
-                  tooltip: 'Increment',
-                  child: Icon(Icons.add,color: Colors.blue,),
-                ),
-              );
+        padding: EdgeInsets.only(bottom: 20, right: 20),
+        alignment: Alignment.bottomRight,
+        child: FloatingActionButton(
+          elevation: 20,
+          backgroundColor: Colors.white,
+          onPressed: () {
+            _addFaq();
+          },
+          tooltip: 'Increment',
+          child: Icon(
+            Icons.add,
+            color: Colors.blue,
+          ),
+        ),
+      );
 
-  Widget _labelContainer()=>Container(
-                color: Colors.transparent,
-                height: 50,
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 80),
-                child: Container(
-                  height: 50,
-                  width: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.black26,
-                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(40),bottomRight: Radius.circular(40))
-                  ),
-                  child: Center(
-                    child: Text("FAQ",style: TextStyle(
-                      fontSize: 30,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 4
-                    ),),
-                  ),
-                ),
-              );
+  Widget _labelContainer() => Container(
+        color: Colors.transparent,
+        height: 50,
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 80),
+        child: Container(
+          height: 50,
+          width: 100,
+          decoration: BoxDecoration(
+              color: Colors.black26,
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40))),
+          child: Center(
+            child: Text(
+              "FAQ",
+              style: TextStyle(
+                  fontSize: 30,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4),
+            ),
+          ),
+        ),
+      );
 
   BoxDecoration _logInButtonDecoration() => BoxDecoration(
         borderRadius: BorderRadius.circular(30),
@@ -111,19 +117,24 @@ class _AdminFaqState extends State<AdminFaq>{
       );
 
   Widget _streamAllUsers() => StreamBuilder<QuerySnapshot>(
-        stream: Firestore.instance.collection("faq").snapshots(),
+        stream: FirebaseFirestore.instance.collection("faq").snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Container(
               width: double.infinity,
-              height: 50.0,
-              child: CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(AppThemeColors.primary),
+              height: MediaQuery.of(context).size.height,
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppThemeColors.primary),
+                ),
               ),
             );
           }
-          if (!snapshot.hasData) return Container(padding: EdgeInsets.only(top:50),child: Text("No FAQs available at the moment"));
+          if (!snapshot.hasData)
+            return Container(
+                padding: EdgeInsets.only(top: 50),
+                child: Text("No FAQs available at the moment"));
           if (snapshot.hasData) {
             return _scrollableContainer(snapshot);
           }
@@ -152,7 +163,8 @@ class _AdminFaqState extends State<AdminFaq>{
             children: <Widget>[_filteredUsersContainer(snapshot)],
           ));
 
-  Widget _filteredUsersContainer(snapshot) => Container(
+  Widget _filteredUsersContainer(AsyncSnapshot<QuerySnapshot> snapshot) =>
+      Container(
         padding: EdgeInsets.only(top: 0.0),
         height: Globals.tabBarWidgetsHeight(context) + 21.5,
         width: double.infinity,
@@ -161,11 +173,11 @@ class _AdminFaqState extends State<AdminFaq>{
             addAutomaticKeepAlives: true,
             addRepaintBoundaries: true,
             shrinkWrap: true,
-            itemCount: snapshot.data.documents.length + 1,
+            itemCount: snapshot.data.docs.length + 1,
             itemBuilder: (BuildContext context, int index) {
-              return index == snapshot.data.documents.length
+              return index == snapshot.data.docs.length
                   ? Container(
-                    margin: EdgeInsets.only(top:50),
+                      margin: EdgeInsets.only(top: 50),
                       width: double.infinity,
                       height: 50.0,
                       alignment: Alignment.center,
@@ -174,9 +186,7 @@ class _AdminFaqState extends State<AdminFaq>{
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                     )
-                  : snapshot.data.documents[index]["faq"] == "faq"
-                      ? Container()
-                      : _faqbutton1(context, index, snapshot);
+                  : _faqbutton1(context, index, snapshot);
             }),
       );
 
@@ -185,25 +195,26 @@ class _AdminFaqState extends State<AdminFaq>{
     return GestureDetector(
       onTap: () {
         _expandUserDialog(
-          snapshot.data.documents[index],
+          snapshot.data.docs[index],
         );
       },
       child: Container(
-        margin: EdgeInsets.only(top:40),
-        child: _buttonWidgets(snapshot,index),
+        margin: EdgeInsets.only(top: 40),
+        child: _buttonWidgets(snapshot, index),
         padding: EdgeInsets.symmetric(horizontal: 20),
       ),
     );
   }
 
-  Widget _buttonWidgets(snapshot,index) => Stack(
+  Widget _buttonWidgets(AsyncSnapshot<QuerySnapshot> snapshot, index) => Stack(
         children: <Widget>[
-          _boardDesign(snapshot,index),
+          _boardDesign(snapshot, index),
           _logo(),
         ],
       );
 
-  Widget _boardDesign(snapshot,index) => Container(
+  Widget _boardDesign(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         width: double.infinity,
         margin: EdgeInsets.fromLTRB(
           50.0,
@@ -212,48 +223,49 @@ class _AdminFaqState extends State<AdminFaq>{
           20,
         ),
         decoration: _logInButtonDecoration(),
-        child: _stackedBoard(snapshot,index),
+        child: _stackedBoard(snapshot, index),
       );
 
-  Widget _stackedBoard(snapshot,index) => Stack(
+  Widget _stackedBoard(AsyncSnapshot<QuerySnapshot> snapshot, index) => Stack(
         children: <Widget>[
           _boardBackground(),
-          _boardText(snapshot,index),
+          _boardText(snapshot, index),
         ],
       );
 
-  Widget _boardText(snapshot,index) => Container(
+  Widget _boardText(AsyncSnapshot<QuerySnapshot> snapshot, index) => Container(
         child: InkWell(
           child: Column(
             children: <Widget>[
-              _titleContainer(snapshot,index),
-              _descContainer(snapshot,index),
+              _titleContainer(snapshot, index),
+              _descContainer(snapshot, index),
             ],
           ),
         ),
       );
 
-  Widget _descContainer(snapshot,index) => Container(
+  Widget _descContainer(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         width: 300,
         height: 120.0,
         //color: Colors.white30,
         alignment: Alignment.topLeft,
         margin: EdgeInsets.only(left: 60.0, right: 15.0, bottom: 0),
-        padding: EdgeInsets.only(top:5),
+        padding: EdgeInsets.only(top: 5),
         child: Text(
           //'sample text lang to na para ma test yung app na to',
-          (snapshot.data.documents[index]['desc']),
+          (snapshot.data.docs[index].data()['desc']),
           style: TextStyle(
-            //backgroundColor: Colors.black38,
-            color: Colors.white,
-            fontSize: 17.0,
-            fontWeight: FontWeight.bold
-          ),
+              //backgroundColor: Colors.black38,
+              color: Colors.white,
+              fontSize: 17.0,
+              fontWeight: FontWeight.bold),
           textAlign: TextAlign.left,
         ),
       );
 
-  Widget _titleContainer(snapshot,index) => Container(
+  Widget _titleContainer(AsyncSnapshot<QuerySnapshot> snapshot, index) =>
+      Container(
         decoration: BoxDecoration(
             border: BorderDirectional(
                 bottom: BorderSide(color: Colors.white, width: 1))),
@@ -268,8 +280,8 @@ class _AdminFaqState extends State<AdminFaq>{
               width: double.infinity,
               //color: Colors.white30,
               child: Text(
-               //'Sample Title',
-                (snapshot.data.documents[index]['title']),
+                //'Sample Title',
+                (snapshot.data.docs[index].data()['title']),
                 style: TextStyle(
                     //backgroundColor: Colors.black38,
                     color: Colors.white,
@@ -312,42 +324,27 @@ class _AdminFaqState extends State<AdminFaq>{
         margin: EdgeInsets.only(top: 100, bottom: 50, left: 0),
       );
 
-  
-  
-  
-  
   void _expandUserDialog(snapshot) {
-    Navigator.push(
-      context,
-      HeroDialogRoute(
-        builder: (BuildContext context) {
-            return Faq1(
-              context: context,
-              snapshot: snapshot,
-            );
-          }
-        )
+    Navigator.push(context, HeroDialogRoute(builder: (BuildContext context) {
+      return Faq1(
+        context: context,
+        snapshot: snapshot,
       );
-    }
+    }));
+  }
 
-    void _addFaq() {
-      
-    Navigator.push(
-      context,
-      HeroDialogRoute(
-        builder: (BuildContext context) {
-            return AddFaq(
-              uid: widget.uid,
-              name: widget.name,
-            );
-          }
-        )
+  void _addFaq() {
+    Navigator.push(context, HeroDialogRoute(builder: (BuildContext context) {
+      return AddFaq(
+        uid: widget.uid,
+        name: widget.name,
       );
-    }
-    // print('object');
-    // print(tab);
-    // print(widget.tab);
-    // print('object');
-    // pushh(context, Faq1(context: context, snapshot: snapshot,tab: widget.tab,));
-  
+    }));
+  }
+  // print('object');
+  // print(tab);
+  // print(widget.tab);
+  // print('object');
+  // pushh(context, Faq1(context: context, snapshot: snapshot,tab: widget.tab,));
+
 }

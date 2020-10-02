@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:helpdesk/provider/firebase_provider.dart';
 import 'package:helpdesk/services/auth.dart';
 import 'package:helpdesk/services/database.dart';
 import 'package:helpdesk/utils/colors.dart';
 import 'package:helpdesk/utils/globals.dart';
+import 'package:provider/provider.dart';
 
 class EditProfile extends StatefulWidget {
   @override
@@ -14,99 +16,71 @@ class EditProfile extends StatefulWidget {
   final String ausn;
   final String aage;
   final String acontact;
-  final String acourse; 
-  EditProfile({
-    this.userId,
-    this.aname,
-    this.aage,
-    this.acontact,
-    this.acourse,
-    this.ausn
-  });
+  final String acourse;
+  final String uid;
+  EditProfile(
+      {this.userId,
+      this.aname,
+      this.aage,
+      this.acontact,
+      this.acourse,
+      this.ausn,
+      this.uid});
 }
 
 class _EditProfileState extends State<EditProfile> {
-
-  Stream<DocumentSnapshot> _getUserInfo;
-
-  @override
-  void initState() {
-    _getUserInfo = Firestore.instance
-        .collection('user')
-        .document(widget.userId)
-        .snapshots();
-String name= widget.aname;
-    super.initState();
-  }
-
-final AuthService _auth= AuthService();
-final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
 //text field state
-String name;
-String error="";
-String usn;
-String age;
-String contact;
-String course;
-bool _logging=false;
+  final name = TextEditingController();
+  String error = "";
+  final usn = TextEditingController();
+  final age = TextEditingController();
+  final contact = TextEditingController();
+  final course = TextEditingController();
 
-
-  Future<bool> _onWillPop() async {
-    FocusScope.of(context).requestFocus(new FocusNode());
-    return (await showDialog(
-          context: context,
-          builder: (context) => new AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(20.0))),
-            content: _discardChangesContainer(context),
-          ),
-        )) ??
-        false;
-  }
   @override
-  Widget build(BuildContext context) => SafeArea(
-          child: WillPopScope(
-        onWillPop: _onWillPop,
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: _body(context),
-        ),
-      ));
+  Widget build(BuildContext context) => _body(context);
 
   Widget _body(context) {
-    return  StreamBuilder<DocumentSnapshot>(
-        stream: _getUserInfo,
+    final firebase = Provider.of<FirebaseProvider>(context);
+    return StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('user')
+            .doc(widget.uid)
+            .snapshots(),
         builder:
             (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-          return snapshot.connectionState==ConnectionState.waiting ? Container(
-                      width: 20.0,
-                      height: 20.0,
-                      child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white)),
-                    ) : Container(
-        child: SingleChildScrollView(
-            child: Stack(
-      children: <Widget>[
-        Container(
-          decoration: _mainContainerBG(),
-          height: Globals.screenHeight(context),
-          width: Globals.screenWidth(context),
-        ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            _customAppBar(context),
-            _titleAndSub(context),
-            _basicInfo(snapshot),
-            _addButton()
-          ],
-        ),
-      ],
-    )));});}
-  
+          return snapshot.connectionState == ConnectionState.waiting
+              ? Container(
+                  width: 20.0,
+                  height: 20.0,
+                  child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                )
+              : Container(
+                  child: SingleChildScrollView(
+                      child: Stack(
+                  children: <Widget>[
+                    Container(
+                      decoration: _mainContainerBG(),
+                      height: Globals.screenHeight(context),
+                      width: Globals.screenWidth(context),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        _customAppBar(context),
+                        _titleAndSub(context),
+                        _basicInfo(snapshot),
+                        _addButton(firebase, snapshot)
+                      ],
+                    ),
+                  ],
+                )));
+        });
+  }
 
   Widget _customAppBar(context) => Container(
         color: Colors.transparent,
@@ -138,7 +112,6 @@ bool _logging=false;
             SizedBox(
               width: Globals.screenWidth(context) / 4,
             ),
-            
           ],
         ),
       );
@@ -202,16 +175,16 @@ bool _logging=false;
 
   BoxDecoration _mainContainerBG() => BoxDecoration(
         gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  stops: [0.1, 0.2, 0.25, 0.25],
-                  colors: [
-                    Colors.blue[600],
-                    Colors.blue[800],
-                    Colors.blue[800],
-                    Colors.white,
-                  ],
-                ),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: [0.1, 0.2, 0.25, 0.25],
+          colors: [
+            Colors.blue[600],
+            Colors.blue[800],
+            Colors.blue[800],
+            Colors.white,
+          ],
+        ),
       );
 
   Widget _titleAndSub(context) => Column(
@@ -261,7 +234,10 @@ bool _logging=false;
             borderRadius: BorderRadius.circular(10.0),
             borderSide: BorderSide(width: 0.6, color: AppThemeColors.primary)),
         hintText: hintText,
-        hintStyle: TextStyle(fontSize: 14.0, color: Colors.black45,),
+        hintStyle: TextStyle(
+          fontSize: 14.0,
+          color: Colors.black45,
+        ),
         fillColor: Colors.white,
         filled: true,
         enabledBorder: OutlineInputBorder(
@@ -269,52 +245,59 @@ bool _logging=false;
             borderSide: BorderSide(width: 1.0, color: Colors.grey[400])),
       );
 
-  Widget _basicInfo(snapshot) => Container(
-      padding: EdgeInsets.symmetric(horizontal: 30),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: <Widget>[
-            SizedBox(height: 100),
-            _label("Name"),
-            _nameTextField(snapshot),
-            SizedBox(height: 20),
-            _label("USN"),
-            _usnTextField(snapshot),
-            SizedBox(height: 20),
-            _label("Age and Contact"),
-            Container(
-              width: 500,
-              child: Row(
-                children: <Widget>[
-                  Container(width: MediaQuery.of(context).size.width/7,child: _ageTextField(snapshot)),
-                  SizedBox(width: 20,),
-                  Container(width: MediaQuery.of(context).size.width/1.5,child: _contactTextField(snapshot))
-                ],
+  Widget _basicInfo(AsyncSnapshot<DocumentSnapshot> snapshot) => Container(
+        padding: EdgeInsets.symmetric(horizontal: 30),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: <Widget>[
+              SizedBox(height: 100),
+              _label("Name"),
+              _nameTextField(snapshot, name),
+              SizedBox(height: 20),
+              _label("USN"),
+              _usnTextField(snapshot, usn),
+              SizedBox(height: 20),
+              _label("Age and Contact"),
+              Container(
+                width: 500,
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                        width: MediaQuery.of(context).size.width / 7,
+                        child: _ageTextField(snapshot, age)),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Container(
+                        width: MediaQuery.of(context).size.width / 1.5,
+                        child: _contactTextField(snapshot, contact))
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            _label("Course"),
-            _courseTextField(snapshot),
-            SizedBox(height: 20),
-          ],
+              SizedBox(height: 20),
+              _label("Course"),
+              _courseTextField(snapshot, course),
+              SizedBox(height: 20),
+            ],
+          ),
         ),
-      ),
-    );
+      );
 
-    Widget _label(data) => Container(
-      alignment: Alignment.centerRight,
-      child: Text(
-        data,
-        style: TextStyle(
-          color: Colors.grey,
-          fontSize: 25,
-          fontStyle: FontStyle.italic,
-          fontWeight: FontWeight.bold
-        ),),
-    );
+  Widget _label(data) => Container(
+        alignment: Alignment.centerRight,
+        child: Text(
+          data,
+          style: TextStyle(
+              color: Colors.grey,
+              fontSize: 25,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.bold),
+        ),
+      );
 
-    Widget _nameTextField(snapshot) => Container(
+  Widget _nameTextField(AsyncSnapshot<DocumentSnapshot> snapshot, controller) =>
+      Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           //border: Border.all(width: .5)
@@ -322,25 +305,20 @@ bool _logging=false;
         margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 0),
         alignment: Alignment.centerLeft,
         child: TextFormField(
-          decoration: inputDecoration(snapshot.data["name"],),
+          controller: controller,
+          decoration: inputDecoration(
+            snapshot.data.data()["name"],
+          ),
           style: TextStyle(
             fontSize: 16.0,
           ),
           textAlign: TextAlign.left,
           keyboardType: TextInputType.text,
-              onChanged: (val) {
-                if (val!=null){
-                  setState(() {
-                  name=val;
-                });
-                }
-                
-                print(name);
-              },
         ),
       );
 
-    Widget _usnTextField(snapshot) => Container(
+  Widget _usnTextField(AsyncSnapshot<DocumentSnapshot> snapshot, controller) =>
+      Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           //border: Border.all(width: .5)
@@ -348,27 +326,23 @@ bool _logging=false;
         margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 0),
         alignment: Alignment.centerLeft,
         child: TextFormField(
+          controller: controller,
           maxLength: 11,
-          decoration: inputDecoration(snapshot.data["usn"],),
+          decoration: inputDecoration(
+            snapshot.data.data()["usn"],
+          ),
           style: TextStyle(
             fontSize: 16.0,
           ),
           textAlign: TextAlign.left,
           keyboardType: TextInputType.number,
-          validator: (val)=> val.length!=0 && val.length != 11 ? 'Enter a valid USN': null,
-              onChanged: (val) {
-                if (val!=null){
-                  setState(() {
-                  usn=val;
-                });
-                }
-                
-                print(usn);
-              },
+          validator: (val) =>
+              val.length != 0 && val.length != 11 ? 'Enter a valid USN' : null,
         ),
       );
 
-    Widget _ageTextField(snapshot) => Container(
+  Widget _ageTextField(AsyncSnapshot<DocumentSnapshot> snapshot, controller) =>
+      Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           //border: Border.all(width: .5)
@@ -376,27 +350,25 @@ bool _logging=false;
         margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 0),
         alignment: Alignment.centerLeft,
         child: TextFormField(
+          controller: controller,
           maxLength: 2,
-          decoration: inputDecoration(snapshot.data["age"],),
+          decoration: inputDecoration(
+            snapshot.data.data()["age"],
+          ),
           style: TextStyle(
             fontSize: 16.0,
           ),
           textAlign: TextAlign.left,
           keyboardType: TextInputType.number,
-          validator: (val)=> val.length!=0 && double.parse(val)<14 ? 'Enter a valid Age': null,
-              onChanged: (val) {
-                if (val!=null){
-                  setState(() {
-                  age=val;
-                });
-                }
-                
-                print(age);
-              },
+          validator: (val) => val.length != 0 && double.parse(val) < 14
+              ? 'Enter a valid Age'
+              : null,
         ),
       );
 
-    Widget _contactTextField(snapshot) => Container(
+  Widget _contactTextField(
+          AsyncSnapshot<DocumentSnapshot> snapshot, controller) =>
+      Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           //border: Border.all(width: .5)
@@ -404,27 +376,25 @@ bool _logging=false;
         margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 0),
         alignment: Alignment.centerLeft,
         child: TextFormField(
+          controller: controller,
           maxLength: 11,
-          decoration: inputDecoration(snapshot.data["contact"],),
+          decoration: inputDecoration(
+            snapshot.data.data()["contact"],
+          ),
           style: TextStyle(
             fontSize: 16.0,
           ),
           textAlign: TextAlign.left,
           keyboardType: TextInputType.number,
-          validator: (val)=> val.length!=0 && val.length != 11 ? 'Enter a valid Contact Number': null,
-              onChanged: (val) {
-                if (val!=null){
-                  setState(() {
-                  contact=val;
-                });
-                }
-                
-                print(contact);
-              },
+          validator: (val) => val.length != 0 && val.length != 11
+              ? 'Enter a valid Contact Number'
+              : null,
         ),
       );
 
-    Widget _courseTextField(snapshot) => Container(
+  Widget _courseTextField(
+          AsyncSnapshot<DocumentSnapshot> snapshot, controller) =>
+      Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           //border: Border.all(width: .5)
@@ -432,118 +402,98 @@ bool _logging=false;
         margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 0),
         alignment: Alignment.centerLeft,
         child: TextFormField(
-          decoration: inputDecoration(snapshot.data["course"],),
+          controller: controller,
+          decoration: inputDecoration(
+            snapshot.data.data()["course"],
+          ),
           style: TextStyle(
             fontSize: 16.0,
           ),
           textAlign: TextAlign.left,
           keyboardType: TextInputType.text,
-              onChanged: (val) {
-                if (val!=null){
-                  setState(() {
-                  course=val;
-                });
-                }
-                
-                print(course);
-              },
         ),
       );
 
-  Widget _addButton() => Container(
-    margin: EdgeInsets.only(top: 50),
-    decoration: _logInButtonDecoration(),
-    child: InkWell(
-      onTap: () async{
-                if (name==null){
+  Widget _addButton(FirebaseProvider firebase,
+          AsyncSnapshot<DocumentSnapshot> snapshot) =>
+      Container(
+          margin: EdgeInsets.only(top: 50),
+          decoration: _logInButtonDecoration(),
+          child: InkWell(
+              onTap: () async {
+                if (name.text == '') {
                   setState(() {
-                  name=widget.aname;
-                });
+                    name.text = widget.aname;
+                  });
                 }
-                if (usn==null){
+                if (usn.text == '') {
                   setState(() {
-                  usn=widget.ausn;
-                });
+                    usn.text = widget.ausn;
+                  });
                 }
-                if (age==null){
+                if (age.text == '') {
                   setState(() {
-                  age=widget.aage;
-                });
+                    age.text = widget.aage;
+                  });
                 }
-                if (contact==null){
+                if (contact.text == '') {
                   setState(() {
-                  contact=widget.acontact;
-                });
+                    contact.text = widget.acontact;
+                  });
                 }
-                if (course==null){
+                if (course.text == '') {
                   setState(() {
-                  course=widget.acourse;
-                });
+                    course.text = widget.acourse;
+                  });
                 }
-                if (_formKey.currentState.validate()){
-                  setState(() {
-                _logging = true;
-              });
-                print(name);
-                print(usn);
-                dynamic result = await await DatabaseService(uid: widget.userId).updateUserData3(name,usn,age,contact,course);
-                Navigator.pop(context);
-                  if (result==null){
-                    setState(() {
-                      error="enter valid email";
-                    });
-                    setState(() {
-                _logging = false;
-              });
-                  }
-                  else{
-                    print("error");
-                    Navigator.pop(context);
-                  }
+                if (_formKey.currentState.validate()) {
+                  print(name);
+                  print(usn);
+                  final result = await firebase
+                      .saveChanges(context, snapshot, name.text, usn.text,
+                          age.text, contact.text, course.text)
+                      .then((value) {
+                    if (value) {
+                      Navigator.of(context).pop();
+                    } else {
+                      setState(() {});
+                    }
+                  });
                 }
-                setState(() {
-                _logging = false;
-              });
-               //Navigator.pop(context);
+                //Navigator.pop(context);
               },
-      child: Container(
-        width: Globals.screenWidth(context),
-        height: 55.0,
-        alignment: Alignment.center,
-        margin: EdgeInsets.only(left: 10.0, right: 10.0),
-        child: _logging==false ? Text(
-              "Update Info",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22.0,
-                fontWeight: FontWeight.bold
-              ),
-          ):Container(
-                      width: 20.0,
-                      height: 20.0,
-                      child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white)),
-                    )
-      )
-    )
-  );
+              child: Container(
+                  width: Globals.screenWidth(context),
+                  height: 55.0,
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.only(left: 10.0, right: 10.0),
+                  child: firebase.loading == false
+                      ? Text(
+                          "Update Info",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22.0,
+                              fontWeight: FontWeight.bold),
+                        )
+                      : Container(
+                          width: 20.0,
+                          height: 20.0,
+                          child: CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white)),
+                        ))));
 
   BoxDecoration _logInButtonDecoration() => BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.bottomLeft,
-      end: Alignment.topRight,
-      stops: [0.1, 0.2, 0.6, 0.9],
-      colors: [
-        Colors.blue[300],
-        Colors.blue[400],
-        Colors.blue,
-        Colors.cyan[200],
-      ],
-    ),
-    border: Border.all(
-      color: AppThemeColors.primary,
-      width: 0.2
-    )
-  );
+      gradient: LinearGradient(
+        begin: Alignment.bottomLeft,
+        end: Alignment.topRight,
+        stops: [0.1, 0.2, 0.6, 0.9],
+        colors: [
+          Colors.blue[300],
+          Colors.blue[400],
+          Colors.blue,
+          Colors.cyan[200],
+        ],
+      ),
+      border: Border.all(color: AppThemeColors.primary, width: 0.2));
 }
